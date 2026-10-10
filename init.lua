@@ -270,6 +270,31 @@ do
     group = vim.api.nvim_create_augroup('kickstart-highlight-yank', { clear = true }),
     callback = function() vim.hl.on_yank() end,
   })
+  -- VSCode Neovim theme changer (only runs inside VSCode)
+  if vim.g.vscode then
+    vim.api.nvim_exec2(
+      [[
+      function! SetCursorLineNrColorInsert(mode)
+        if a:mode == "i"
+          call VSCodeNotify('nvim-theme.insert')
+        elseif a:mode == "r"
+          call VSCodeNotify('nvim-theme.replace')
+        endif
+      endfunction
+
+      augroup CursorLineNrColorSwap
+        autocmd!
+        autocmd ModeChanged *:[vV\x16]* call VSCodeNotify('nvim-theme.visual')
+        autocmd ModeChanged *:[R]* call VSCodeNotify('nvim-theme.replace')
+        autocmd InsertEnter * call SetCursorLineNrColorInsert(v:insertmode)
+        autocmd InsertLeave * call VSCodeNotify('nvim-theme.normal')
+        autocmd CursorHold * call VSCodeNotify('nvim-theme.normal')
+        autocmd ModeChanged [vV\x16]*:* call VSCodeNotify('nvim-theme.normal')
+      augroup END
+    ]],
+      {}
+    )
+  end
 end
 
 -- ============================================================
